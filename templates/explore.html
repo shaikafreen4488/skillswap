@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import avatar, level_pill, rating, empty %}
+{% block title %}Explore skills{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1 class="h2 mb-1">Explore skills</h1><p class="text-muted mb-0">Find students who can teach you.</p></div>
+</div>
+
+<form class="panel mb-4" method="get" action="{{ url_for('explore') }}">
+  <div class="row g-2 align-items-end">
+    <div class="col-lg-3">
+      <label class="form-label" for="q">Search</label>
+      <input class="form-control" id="q" name="q" value="{{ filters.q }}" placeholder="Skill or student name">
+    </div>
+    <div class="col-6 col-lg-2">
+      <label class="form-label" for="f-skill">Skill</label>
+      <select class="form-select" id="f-skill" name="skill_id">
+        <option value="">All skills</option>
+        {% for k in skills %}<option value="{{ k.skill_id }}" {{ 'selected' if filters.skill_id == k.skill_id }}>{{ k.skill_name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-lg-3">
+      <label class="form-label" for="f-dept">Department</label>
+      <select class="form-select" id="f-dept" name="department">
+        <option value="">All departments</option>
+        {% for d in departments %}<option {{ 'selected' if filters.department == d }}>{{ d }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-lg-2">
+      <label class="form-label" for="f-level">Level</label>
+      <select class="form-select" id="f-level" name="level">
+        <option value="">Any level</option>
+        {% for lv in levels %}<option {{ 'selected' if filters.level == lv }}>{{ lv }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-lg-2 d-flex gap-2">
+      <button class="btn btn-primary flex-grow-1" type="submit">Search</button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('explore') }}" aria-label="Clear filters"><i class="bi bi-x-lg"></i></a>
+    </div>
+  </div>
+</form>
+
+{% if results %}
+<p class="text-muted">{{ results|length }} teacher{{ '' if results|length == 1 else 's' }} found</p>
+<div class="row g-3">
+  {% for r in results %}
+  <div class="col-md-6 col-xl-4">
+    <div class="panel teacher-card">
+      <div class="d-flex gap-3 align-items-center">
+        {{ avatar(r.full_name) }}
+        <div>
+          <a class="fw-semibold text-decoration-none" href="{{ url_for('profile', student_id=r.student_id) }}">{{ r.full_name }}</a>
+          <div class="text-muted small">Year {{ r.year_of_study }}, {{ r.department }}</div>
+        </div>
+      </div>
+      <div>
+        <p class="skill-name">{{ r.skill_name }}</p>
+        <div class="d-flex align-items-center gap-2 flex-wrap mt-1">{{ level_pill(r.skill_level) }} {{ rating(r.avg_rating, r.rating_count) }}</div>
+        {% if r.description %}<p class="text-muted small mt-2 mb-0">{{ r.description }}</p>{% endif %}
+      </div>
+      <div class="d-flex gap-2 mt-auto">
+        {% if r.already_requested %}
+          <a class="btn btn-outline-secondary flex-grow-1 disabled" aria-disabled="true">Request pending</a>
+        {% else %}
+          <a class="btn btn-primary flex-grow-1" href="{{ url_for('send_request', teacher_id=r.student_id, skill_id=r.skill_id) }}">Request to learn</a>
+        {% endif %}
+        <a class="btn btn-outline-primary" href="{{ url_for('profile', student_id=r.student_id) }}">Details</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="panel">
+  {% call empty('search', 'No teachers found', 'Try fewer filters, or check back after more students add skills.') %}
+    <a class="btn btn-primary" href="{{ url_for('explore') }}">Clear filters</a>
+  {% endcall %}
+</div>
+{% endif %}
+{% endblock %}

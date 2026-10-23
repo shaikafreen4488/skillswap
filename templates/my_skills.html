@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import csrf, level_pill, empty %}
+{% block title %}My skills{% endblock %}
+
+{% macro skill_list(items, kind) %}
+  {% for s in items %}
+  <div class="row-item">
+    <div class="grow">
+      <strong>{{ s.skill_name }}</strong> {{ level_pill(s.skill_level) }}
+      {% if s.description %}<div class="text-muted small mt-1">{{ s.description }}</div>{% endif %}
+    </div>
+    <div class="d-flex gap-1">
+      <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editSkillModal"
+              data-action="{{ url_for('edit_skill', student_skill_id=s.student_skill_id) }}"
+              data-name="{{ s.skill_name }}" data-level="{{ s.skill_level }}" data-description="{{ s.description or '' }}"
+              aria-label="Edit {{ s.skill_name }}"><i class="bi bi-pencil"></i></button>
+      <form method="post" action="{{ url_for('delete_skill', student_skill_id=s.student_skill_id) }}"
+            data-confirm="Delete {{ s.skill_name }} from your {{ kind }} list?">
+        {{ csrf() }}
+        <button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Delete {{ s.skill_name }}"><i class="bi bi-trash"></i></button>
+      </form>
+    </div>
+  </div>
+  {% else %}
+    {{ empty('plus-circle', 'Nothing here yet', 'Use the form to add your first skill.') }}
+  {% endfor %}
+{% endmacro %}
+
+{% block content %}
+<div class="page-head"><h1 class="h2 mb-0">My skills</h1></div>
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="panel sticky-form">
+      <h2 class="panel-title">Add a skill</h2>
+      <form method="post" action="{{ url_for('add_skill') }}" class="needs-validation" novalidate>
+        {{ csrf() }}
+        <div class="btn-group w-100 mb-3 type-toggle" role="group" aria-label="Skill type">
+          <input type="radio" class="btn-check" name="skill_type" id="type-teach" value="teach" checked>
+          <label class="btn btn-outline-primary" for="type-teach">I can teach</label>
+          <input type="radio" class="btn-check" name="skill_type" id="type-learn" value="learn">
+          <label class="btn btn-outline-primary" for="type-learn">I want to learn</label>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="skill_id">Skill</label>
+          <select class="form-select" id="skill_id" name="skill_id">
+            <option value="">Choose a skill</option>
+            {% for k in all_skills %}<option value="{{ k.skill_id }}">{{ k.skill_name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="new_skill">Not in the list? Type a new skill</label>
+          <input class="form-control" id="new_skill" name="new_skill" maxlength="60" placeholder="For example: Video Editing">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="skill_level">Level</label>
+          <select class="form-select" id="skill_level" name="skill_level" required>
+            {% for lv in levels %}<option>{{ lv }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="description">Short note (optional)</label>
+          <input class="form-control" id="description" name="description" maxlength="255" data-counter placeholder="What can you teach, or what do you want to learn?">
+        </div>
+        <button class="btn btn-primary w-100" type="submit"><i class="bi bi-plus-lg"></i> Add skill</button>
+      </form>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="panel mb-4">
+      <h2 class="panel-title">Skills I can teach ({{ teach_skills|length }})</h2>
+      {{ skill_list(teach_skills, 'teaching') }}
+    </div>
+    <div class="panel">
+      <h2 class="panel-title">Skills I want to learn ({{ learn_skills|length }})</h2>
+      {{ skill_list(learn_skills, 'learning') }}
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="editSkillModal" tabindex="-1" aria-labelledby="editSkillTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content" method="post" action="">
+      {{ csrf() }}
+      <div class="modal-header">
+        <h2 class="modal-title h5" id="editSkillTitle">Edit <span id="edit-skill-name"></span></h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label" for="edit-level">Level</label>
+          <select class="form-select" id="edit-level" name="skill_level" required>
+            {% for lv in levels %}<option>{{ lv }}</option>{% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="form-label" for="edit-description">Short note</label>
+          <input class="form-control" id="edit-description" name="description" maxlength="255">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

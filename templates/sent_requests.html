@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import csrf, status_badge, avatar, empty %}
+{% block title %}Requests I sent{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1 class="h2 mb-0">Requests I sent</h1>
+  <a class="btn btn-outline-primary" href="{{ url_for('received_requests') }}">Requests I received</a>
+</div>
+<div class="panel">
+  {% for r in requests %}
+  <div class="row-item">
+    {{ avatar(r.teacher_name) }}
+    <div class="grow">
+      <div><strong>{{ r.skill_name }}</strong> with
+        <a href="{{ url_for('profile', student_id=r.teacher_id) }}">{{ r.teacher_name }}</a> {{ status_badge(r.status) }}</div>
+      <div class="text-muted small">Sent {{ r.created_at|dt('%d %b %Y') }}</div>
+      {% if r.message %}<div class="small mt-1">{{ r.message }}</div>{% endif %}
+    </div>
+    <div class="d-flex gap-2 flex-wrap justify-content-end">
+      {% if r.status == 'Pending' %}
+      <form method="post" action="{{ url_for('cancel_request', request_id=r.request_id) }}" data-confirm="Cancel your request to {{ r.teacher_name }}?">
+        {{ csrf() }}<button class="btn btn-sm btn-outline-danger" type="submit">Cancel request</button>
+      </form>
+      {% elif r.status == 'Accepted' %}
+      <a class="btn btn-sm btn-primary" href="{{ url_for('schedule_session', request_id=r.request_id) }}">Schedule session</a>
+      {% endif %}
+    </div>
+  </div>
+  {% else %}
+    {% call empty('send', 'You have not sent any requests', 'Find a teacher and ask to learn a skill.') %}
+      <a class="btn btn-primary" href="{{ url_for('explore') }}">Explore skills</a>
+    {% endcall %}
+  {% endfor %}
+</div>
+{% endblock %}

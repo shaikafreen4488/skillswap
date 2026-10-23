@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import csrf, auth_aside %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+<div class="auth-wrap row g-4 align-items-stretch">
+  <div class="col-lg-6 d-none d-lg-block">{{ auth_aside() }}</div>
+  <div class="col-lg-6">
+    <div class="panel p-4">
+      <h2 class="mb-1">Log in</h2>
+      <p class="text-muted">Use your roll number and password.</p>
+      <form method="post" class="needs-validation" novalidate>
+        {{ csrf() }}
+        <input type="hidden" name="next" value="{{ next_url }}">
+        <div class="mb-3">
+          <label class="form-label" for="roll_number">Roll number</label>
+          <input class="form-control" id="roll_number" name="roll_number" required autocomplete="username" autofocus>
+          <div class="invalid-feedback">Enter your roll number.</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="password">Password</label>
+          <input class="form-control" type="password" id="password" name="password" required autocomplete="current-password">
+          <div class="invalid-feedback">Enter your password.</div>
+        </div>
+        <button class="btn btn-primary w-100" type="submit">Log in</button>
+      </form>
+      <p class="text-center text-muted mt-3 mb-0">New here? <a href="{{ url_for('register') }}">Create an account</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

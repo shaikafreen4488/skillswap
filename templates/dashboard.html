@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import status_badge, rating, avatar, empty %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1 class="h2 mb-1">Welcome back, {{ session.get('name', '').split()[0] if session.get('name') else '' }}</h1>
+    <p class="text-muted mb-0">
+      {% if stats.rating_count %}Your average rating: {{ rating(stats.avg_rating, stats.rating_count) }}
+      {% else %}Add a skill or request a lesson to get your first session.{% endif %}
+    </p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('explore') }}"><i class="bi bi-search"></i> Find a teacher</a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3"><a class="stat" href="{{ url_for('my_skills') }}"><div class="stat-number">{{ stats.teach_count }}</div><div class="stat-label">Skills you teach</div></a></div>
+  <div class="col-6 col-lg-3"><a class="stat sun" href="{{ url_for('my_skills') }}"><div class="stat-number">{{ stats.learn_count }}</div><div class="stat-label">Skills you want to learn</div></a></div>
+  <div class="col-6 col-lg-3"><a class="stat" href="{{ url_for('received_requests') }}"><div class="stat-number">{{ stats.pending_count }}</div><div class="stat-label">Pending requests for you</div></a></div>
+  <div class="col-6 col-lg-3"><a class="stat sun" href="{{ url_for('sessions_list') }}"><div class="stat-number">{{ stats.accepted_count }}</div><div class="stat-label">Accepted requests</div></a></div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="panel h-100">
+      <h2 class="panel-title">Requests waiting for you</h2>
+      {% for r in pending %}
+      <div class="row-item">
+        {{ avatar(r.learner_name) }}
+        <div class="grow">
+          <strong>{{ r.learner_name }}</strong> wants to learn <strong>{{ r.skill_name }}</strong>
+          {% if r.message %}<div class="text-muted small text-truncate">{{ r.message }}</div>{% endif %}
+        </div>
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('received_requests') }}">Review</a>
+      </div>
+      {% else %}
+        {% call empty('inbox', 'No pending requests', 'When someone asks to learn from you, it shows up here.') %}
+          <a class="btn btn-sm btn-primary" href="{{ url_for('my_skills') }}">Add a skill you teach</a>
+        {% endcall %}
+      {% endfor %}
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="panel h-100">
+      <h2 class="panel-title">Upcoming sessions</h2>
+      {% for s in upcoming %}
+      <div class="row-item">
+        {{ avatar(s.teacher_name if s.learner_id == session['student_id'] else s.learner_name) }}
+        <div class="grow">
+          <strong>{{ s.title }}</strong>
+          <div class="text-muted small">{{ s.session_datetime|dt }}, with {{ s.teacher_name if s.learner_id == session['student_id'] else s.learner_name }}</div>
+        </div>
+        {{ status_badge(s.status) }}
+      </div>
+      {% else %}
+        {% call empty('calendar-event', 'No sessions yet', 'Accept or send a request, then schedule a session.') %}
+          <a class="btn btn-sm btn-primary" href="{{ url_for('sessions_list') }}">Open sessions</a>
+        {% endcall %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="panel mt-4">
+  <h2 class="panel-title">Quick links</h2>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-outline-primary" href="{{ url_for('my_skills') }}"><i class="bi bi-lightbulb"></i> Manage my skills</a>
+    <a class="btn btn-outline-primary" href="{{ url_for('explore') }}"><i class="bi bi-compass"></i> Explore teachers</a>
+    <a class="btn btn-outline-primary" href="{{ url_for('sent_requests') }}"><i class="bi bi-send"></i> Requests I sent</a>
+    <a class="btn btn-outline-primary" href="{{ url_for('received_requests') }}"><i class="bi bi-inbox"></i> Requests I received</a>
+    <a class="btn btn-outline-primary" href="{{ url_for('profile') }}"><i class="bi bi-person"></i> My profile</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+
+{% macro status_badge(status) %}
+{% set colors = {'Pending': 'warning', 'Accepted': 'success', 'Rejected': 'danger', 'Cancelled': 'secondary', 'Completed': 'primary', 'Scheduled': 'info'} %}
+<span class="badge text-bg-{{ colors.get(status, 'secondary') }}">{{ status }}</span>
+{% endmacro %}
+
+{% macro rating(avg, count) %}
+{% if avg %}<span class="rating"><i class="bi bi-star-fill"></i> {{ avg }} <small class="text-muted fw-normal">({{ count }})</small></span>
+{% else %}<span class="text-muted small">No ratings yet</span>{% endif %}
+{% endmacro %}
+
+{% macro avatar(name, size='') %}<span class="avatar {{ size }}" aria-hidden="true">{{ name[:1]|upper }}</span>{% endmacro %}
+
+{% macro level_pill(level) %}<span class="level level-{{ level|lower }}">{{ level }}</span>{% endmacro %}
+
+{% macro empty(icon, title, text) %}
+<div class="empty">
+  <i class="bi bi-{{ icon }}"></i>
+  <h3>{{ title }}</h3>
+  <p class="mb-3">{{ text }}</p>
+  {% if caller %}{{ caller() }}{% endif %}
+</div>
+{% endmacro %}
+
+{% macro auth_aside() %}
+<div class="auth-aside">
+  <h1>Teach what you know. Learn what you do not.</h1>
+  <p>SkillSwap connects students on your campus. Share a skill, request a lesson, and meet for a session.</p>
+  <div class="swap" aria-hidden="true">
+    <span class="swap-chip"><i class="bi bi-mortarboard"></i> I can teach Python</span>
+    <span class="swap-arrow"><i class="bi bi-arrow-down-up"></i></span>
+    <span class="swap-chip sun"><i class="bi bi-bullseye"></i> I want to learn SQL</span>
+  </div>
+</div>
+{% endmacro %}
